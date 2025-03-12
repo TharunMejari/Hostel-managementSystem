@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Condition Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            background: #007BFF;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e7f3fe;
+            color: #31708f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Hostel Room Management System</h2>
+</div>
+
+<div class="container">
+    <h1>Submit a Report</h1>
+    
+    <label for="name">Name:</label>
+    <input type="text" id="name" placeholder="Enter your name" required>
+
+    <label for="room-number">Room No:</label>
+    <input type="text" id="room-number" placeholder="Enter your room number" required>
+
+    <label for="issue-type">Select Issue Type:</label>
+    <select id="issue-type" required>
+        <option value="cleanliness">Cleanliness</option>
+        <option value="maintenance">Maintenance</option>
+        <option value="other">Other</option>
+    </select>
+
+    <label for="description">Description:</label>
+    <textarea id="description" rows="4" placeholder="Enter a description of the issue" required></textarea>
+
+    <button id="submit-button">Submit Report</button>
+
+    <div class="status">
+        <strong>Tracking ID:</strong> 
+        <span id="trackingId"></span>
+    </div>
+
+    <label for="check-tracking-id">Check Tracking ID Status:</label>
+    <input type="text" id="check-tracking-id" placeholder="Enter your tracking ID" />
+    <button id="check-status-button">Check Status</button>
+
+    <div class="status" id="status-display" style="display: none;">
+        <strong>Status:</strong> 
+        <span id="status"></span>
+    </div>
+</div>
+
+<script>
+    // Handle the submit button click
+    document.getElementById('submit-button').addEventListener('click', function() {
+        const name = document.getElementById('name').value;
+        const roomNumber = document.getElementById('room-number').value;
+        const issueType = document.getElementById('issue-type').value;
+        const description = document.getElementById('description').value;
+
+        const report = {
+            name,
+            roomNumber,
+            issueType,
+            description
+        };
+
+        fetch('/api/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(report)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('trackingId').innerText = data.trackingId;
+            alert(`Report submitted!\nTracking ID: ${data.trackingId}`);
+            // Clear the input fields after submission
+            document.getElementById('name').value = '';
+            document.getElementById('room-number').value = '';
+            document.getElementById('issue-type').value = 'cleanliness';
+            document.getElementById('description').value = '';
+        });
+    });
+
+    // Handle the check status button click
+    document.getElementById('check-status-button').addEventListener('click', function() {
+        const trackingId = document.getElementById('check-tracking-id').value;
+
+        fetch(`/api/reports/${trackingId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Tracking ID not found.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('status').innerText = data.status;
+            document.getElementById('status-display').style.display = 'block';
+        })
+        .catch(error => {
+            document.getElementById('status').innerText = error.message;
+            document.getElementById('status-display').style.display = 'block';
+        });
+    });
+</script>
+
+</body>
+</html>
